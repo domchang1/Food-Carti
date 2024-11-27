@@ -11,7 +11,7 @@ import SwiftUI
 struct Food_CartiApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView().environmentObject(AppViewModel())
         }
     }
 }

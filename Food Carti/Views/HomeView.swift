@@ -9,7 +9,11 @@ import SwiftUI
 
 struct HomeView: View {
     var body: some View {
-        Text("HomeView")
+        Text("Your Feed")
+            .padding()
+            .fontWeight(.medium)
+            .font(.system(size: 25))
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
