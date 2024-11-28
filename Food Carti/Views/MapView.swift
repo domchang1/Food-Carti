@@ -12,6 +12,7 @@ struct MapView: View {
     @EnvironmentObject var viewModel: AppViewModel
     @State var selectedLocation: Location?
     @State var index: MapSelection<Int>?
+    @State var showingPopUp = false
     let position = MapCameraPosition.region(
         MKCoordinateRegion(
             center: CLLocationCoordinate2D(latitude: 39.9526, longitude: -75.198918),
@@ -31,14 +32,32 @@ struct MapView: View {
                     ForEach(0..<viewModel.locations.count) { i in
                         Marker(viewModel.locations[i].name, coordinate: viewModel.locations[i].coordinate)
                             .tag(MapSelection(i))
-    //                        .onTapGesture {
-    //                            selectedLocation = location
-    //                        }
+                    }
+                }
+                .onTapGesture { position in
+                    if let coordinate = proxy.convert(position, from: .local) {
+                        var found = false
+                        for location in viewModel.locations {
+                            if fabs(coordinate.latitude - location.coordinate.latitude) <= 0.0005 && fabs(coordinate.longitude - location.coordinate.longitude) <= 0.0005 {
+                                selectedLocation = location
+                                found = true
+                                showingPopUp = true
+                            }
+                        }
+                        if !found {
+                            selectedLocation = nil
+                        }
+                        //print(coordinate)
                     }
                 }
             }
-            if let location = selectedLocation {
-                LocationPopupView(location: location)
+            .sheet(isPresented: $showingPopUp) {
+                if let location = selectedLocation {
+                    LocationPopupView(location: location)
+                        .presentationDetents([.medium])
+                        .background(Color.gray.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
             }
         }
     }
@@ -57,8 +76,6 @@ struct LocationPopupView: View {
                 
                 Text(location.description)
                     .font(.body)
-                
-                Spacer()
             }
             .padding()
             .navigationBarItems(trailing: Button("Close") {

@@ -22,7 +22,6 @@ struct ContentView: View {
         .frame(maxWidth: .infinity, alignment: .center)
         .foregroundStyle(.primary)
         .background(Color.gray.opacity(0.1))
-//        .foregroundColor(.white)
         .clipShape(RoundedRectangle(cornerRadius: 10))
         TabView {
             Tab("Home", systemImage: "house") {
