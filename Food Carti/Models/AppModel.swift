@@ -13,4 +13,5 @@ struct Location: Identifiable {
     let name: String
     let coordinate: CLLocationCoordinate2D
     let description: String
+    let image: String
 }

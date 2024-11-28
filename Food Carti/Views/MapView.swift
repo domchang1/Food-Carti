@@ -76,6 +76,10 @@ struct LocationPopupView: View {
                 
                 Text(location.description)
                     .font(.body)
+                Image(location.image)
+                    .resizable()
+                    .scaledToFit()
+                    //.frame(width: 25, height: 25)
             }
             .padding()
             .navigationBarItems(trailing: Button("Close") {
