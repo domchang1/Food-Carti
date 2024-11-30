@@ -11,58 +11,69 @@ import MapKit
 struct MapView: View {
     @EnvironmentObject var viewModel: AppViewModel
     @State var selectedLocation: Location?
-    @State var index: MapSelection<Int>?
     @State var showingPopUp = false
-    let position = MapCameraPosition.region(
-        MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 39.9526, longitude: -75.198918),
-            span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
-        )
+
+    @State private var region: MKCoordinateRegion = MKCoordinateRegion(
+        center: CLLocationCoordinate2D(latitude: 39.9526, longitude: -75.198918),
+        span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
     )
-    
+
+    @State private var trackingMode: MapUserTrackingMode = .follow // User location tracking mode
+
     var body: some View {
-        Text("Discover")
-            .padding()
-            .fontWeight(.medium)
-            .font(.system(size: 25))
-            .frame(maxWidth: .infinity, alignment: .leading)
-        ZStack {
-            MapReader { proxy in
-                Map(initialPosition: position, selection: $index) {
-                    ForEach(0..<viewModel.locations.count) { i in
-                        Marker(viewModel.locations[i].name, coordinate: viewModel.locations[i].coordinate)
-                            .tag(MapSelection(i))
-                    }
-                }
-                .onTapGesture { position in
-                    if let coordinate = proxy.convert(position, from: .local) {
-                        var found = false
-                        for location in viewModel.locations {
-                            if fabs(coordinate.latitude - location.coordinate.latitude) <= 0.0005 && fabs(coordinate.longitude - location.coordinate.longitude) <= 0.0005 {
-                                selectedLocation = location
-                                found = true
-                                showingPopUp = true
+        VStack {
+            Text("Discover")
+                .padding()
+                .fontWeight(.medium)
+                .font(.system(size: 25))
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            ZStack {
+                // Display Map
+                Map(coordinateRegion: $region, showsUserLocation: true, userTrackingMode: $trackingMode, annotationItems: viewModel.locations) { location in
+                    MapAnnotation(coordinate: location.coordinate) {
+                        Button(action: {
+                            // Handle click on a marker
+                            selectedLocation = location
+                            showingPopUp = true
+                        }) {
+                            VStack {
+                                Text(location.name) // Display text for the marker
+                                    .font(.caption)
+                                    .foregroundColor(.white)
+                                    .padding(4)
+                                    .background(Color.black.opacity(0.7))
+                                    .clipShape(RoundedRectangle(cornerRadius: 5))
+                                Image(systemName: "mappin.circle.fill") // Marker icon
+                                    .foregroundColor(.red)
+                                    .font(.title)
                             }
                         }
-                        if !found {
-                            selectedLocation = nil
-                        }
-                        //print(coordinate)
                     }
                 }
-            }
-            .sheet(isPresented: $showingPopUp) {
-                if let location = selectedLocation {
-                    LocationPopupView(location: location)
-                        .environmentObject(viewModel)
-                        .presentationDetents([.medium])
-                        .background(Color.gray.opacity(0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                .onAppear {
+                    if let userLocation = viewModel.userLocation {
+                        region.center = userLocation
+                    }
+                }
+
+                // Show Location Popup
+                .sheet(isPresented: $showingPopUp) {
+                    if let location = selectedLocation {
+                        LocationPopupView(location: location)
+                            .environmentObject(viewModel)
+                            .presentationDetents([.medium])
+                            .background(Color.gray.opacity(0.1))
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
                 }
             }
         }
+        .padding(.bottom, 50) // Space for the navigation bar
     }
 }
+
+
 
 struct LocationPopupView: View {
     @EnvironmentObject var viewModel: AppViewModel
