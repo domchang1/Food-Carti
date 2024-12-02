@@ -93,7 +93,7 @@ struct HomeView: View {
                                 locationName: location.name,
                                 rating: rating,
                                 description: descriptionString,
-                                reviewer: "Anonymous"
+                                reviewer: viewModel.user.name
                             )
                             viewModel.reviews.insert(newReview, at: 0) // Add to top of reviews
                             showingAddReview = false // Close the sheet

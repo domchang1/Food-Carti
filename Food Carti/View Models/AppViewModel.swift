@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreLocation
+import SwiftData
 
 extension CLLocationCoordinate2D: Equatable {
     public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D) -> Bool {
@@ -25,6 +26,13 @@ class AppViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         Location(name: "Bui's Lunch Truck", coordinate: CLLocationCoordinate2D(latitude: 39.951656866004065, longitude: -75.19920484599017), description: "A convenient and delicious breakfast/lunch food truck!", image: "buis"),
         
     ]
+    let userDefaults = UserDefaults.standard
+
+    var favorited: [String] = []
+    var user = User(
+        name: "John Doe",
+        email: "john@example.com"
+    )
     
     @Published var reviews: [Review] = [
         Review(locationName: "Tyson Bees", rating: 10.0, description: "Really yummy", reviewer: "Kevy Song"),
@@ -45,6 +53,8 @@ class AppViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         locationManager.delegate = self
         locationManager.requestWhenInUseAuthorization() // Request location permission
         locationManager.startUpdatingLocation() // Start location updates
+        
+        favorited = userDefaults.stringArray(forKey: "favorited") ?? []
     }
     
     // Delegate method to update user location
@@ -59,5 +69,17 @@ class AppViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     // Delegate method to handle errors
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print("Failed to get user location: \(error)")
+    }
+    
+    func addFavorite(location: String) {
+        favorited.append(location)
+        userDefaults.set(favorited, forKey: "favorited")
+    }
+    
+    func removeFavorite(location: String) {
+        if let index = favorited.firstIndex(of: location) {
+            favorited.remove(at: index)
+            userDefaults.set(favorited, forKey: "favorited")
+        }
     }
 }

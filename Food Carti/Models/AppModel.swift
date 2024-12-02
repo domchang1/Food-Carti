@@ -29,3 +29,8 @@ struct Review: Identifiable {
     let description: String
     let reviewer: String
 }
+
+struct User {
+    var name: String
+    var email: String
+}

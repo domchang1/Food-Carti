@@ -135,7 +135,7 @@ struct LocationPopupView: View {
                         )
                         .textFieldStyle(.roundedBorder)
                         .padding()
-                        Button(action: { // fix when review class changed
+                        Button(action: {
                             let review: Review = .init(
                                 locationName: location.name,
                                 rating: rating,
@@ -158,8 +158,20 @@ struct LocationPopupView: View {
                 }
             }
             .padding()
-            .navigationBarItems(trailing: Button("Close") {
-                dismiss()
+            .navigationBarItems(trailing:
+                                    HStack {
+                Button("Close") {
+                    dismiss()
+                }
+                if viewModel.favorited.contains(location.name) {
+                   Button("Favorited", systemImage: "mappin.circle.fill") {
+                       viewModel.removeFavorite(location:location.name)
+                   }
+                } else {
+                    Button("Add to Favorite Locations", systemImage: "mappin.circle") {
+                        viewModel.addFavorite(location:location.name)
+                    }
+                }
             })
         }
     }
