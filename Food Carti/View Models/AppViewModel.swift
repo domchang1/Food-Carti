@@ -52,6 +52,12 @@ class AppViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         favorited = userDefaults.stringArray(forKey: "favorited") ?? []
         username = userDefaults.string(forKey: "username") ?? ""
         reviews = loadReviews()
+        if reviews.isEmpty {
+                    addReview(locationName: "Tyson Bees", rating: 10.0, description: "Really yummy", reviewer: "Kevy Song")
+                    addReview(locationName: "UPenn Gyro", rating: 5.0, description: "Disgusting", reviewer: "Big Rich")
+                    addReview(locationName: "UPenn Gyro", rating: 0.8, description: "Actual garbage", reviewer: "Kevy Song")
+                    addReview(locationName: "Tyson Bees", rating: 6.7, description: "I mean it’s alright", reviewer: "Big Rich")
+        }
 
         print("Loaded favorites: \(favorited)")
     }
