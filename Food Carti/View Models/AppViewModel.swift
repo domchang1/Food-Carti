@@ -36,12 +36,6 @@ class AppViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     private var locationManager: CLLocationManager
     
-    @Published private var visitedLocations: Set<String> {
-        didSet {
-            userDefaults.set(Array(visitedLocations), forKey: "visitedLocations") // Save to UserDefaults
-        }
-    }
-    
     @Published var reviews: [Review] = [] {
         didSet {
             saveReviews()
@@ -50,7 +44,6 @@ class AppViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     override init() {
         self.locationManager = CLLocationManager()
-        self.visitedLocations = Set(userDefaults.stringArray(forKey: "visitedLocations") ?? [])
         super.init()
 
         // Initialize location manager
@@ -61,10 +54,8 @@ class AppViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         // Load persisted data
         favorited = userDefaults.stringArray(forKey: "favorited") ?? []
         reviews = loadReviews()
-        updateVisitedState()
 
         print("Loaded favorites: \(favorited)")
-        print("Loaded visited locations: \(visitedLocations)")
     }
 
     // MARK: - Reviews Persistence
@@ -126,38 +117,5 @@ class AppViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    func markVisited(locationName: String) {
-        visitedLocations.insert(locationName) // Add to the visited set
-        updateVisitedState() // Update the visited property for locations
-    }
-
-    func isVisited(locationName: String) -> Bool {
-        return visitedLocations.contains(locationName)
-    }
-
-    // Update the visited property for all locations
-    private func updateVisitedState() {
-        for i in 0..<locations.count {
-            locations[i].visited = isVisited(locationName: locations[i].name)
-        }
-    }
-    
-    private let visitThreshold: CLLocationDistance = 50
-    
-    func checkProximity() {
-        guard let userLocation = userLocation else { return }
-
-        for location in locations {
-            let locationCoordinate = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
-            let userCoordinate = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
-
-            let distance = locationCoordinate.distance(from: userCoordinate)
-
-            if distance <= visitThreshold && !isVisited(locationName: location.name) {
-                markVisited(locationName: location.name)
-                print("Marked as visited: \(location.name)")
-            }
-        }
-    }
 }
 

@@ -57,10 +57,6 @@ struct MapView: View {
                         region.center = userLocation
                     }
                 }
-                .onChange(of: viewModel.userLocation) { _ in
-                    // Trigger the proximity check already in the view model
-                    viewModel.checkProximity()
-                }
 
                 // Show Location Popup
                 .sheet(isPresented: $showingPopUp) {
