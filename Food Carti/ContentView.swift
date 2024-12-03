@@ -10,6 +10,7 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var viewModel: AppViewModel
     @State var username: String = ""
+    @State var isChanged: Bool = false
     var body: some View {
         HStack(alignment: .center) {
             Image("foodcart")
@@ -24,7 +25,7 @@ struct ContentView: View {
         .foregroundStyle(.primary)
         .background(Color.gray.opacity(0.1))
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        if viewModel.username != "" {
+        if isChanged || (viewModel.username != ""){
             TabView {
                 Tab("Home", systemImage: "house") {
                     HomeView().environmentObject(viewModel)
@@ -50,6 +51,7 @@ struct ContentView: View {
                         .padding()
             Button(action: {
                 viewModel.addUsername(name: username)
+                isChanged.toggle()
             }){
                             Text("Submit")
                                 .padding()

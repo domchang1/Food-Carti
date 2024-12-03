@@ -31,14 +31,11 @@ struct UserView: View {
                 Spacer()
             }
             .padding()
-            .background(Color.white.cornerRadius(10))
-            .shadow(radius: 10)
 
             // Favorites Section
             VStack(alignment: .leading, spacing: 10) {
-                Text("Favorite Food Carts")
+                Text("Favorite Food Carts: ")
                     .font(.headline)
-                    .padding(.leading)
                     .padding()
 
                 if viewModel.favorited.isEmpty {
@@ -46,7 +43,6 @@ struct UserView: View {
                         .foregroundColor(.gray)
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding()
-                        .background(Color.white.cornerRadius(10))
                         
                 } else {
                     List {
@@ -82,8 +78,6 @@ struct UserView: View {
                 }
             }
             .padding()
-            .background(Color.white.cornerRadius(10))
-            .shadow(radius: 10)
 
             Spacer()
         }

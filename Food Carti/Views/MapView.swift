@@ -30,7 +30,7 @@ struct MapView: View {
 
             ZStack {
                 // Display Map
-                Map(coordinateRegion: $region, showsUserLocation: true, userTrackingMode: $trackingMode, annotationItems: viewModel.locations) { location in
+                Map(coordinateRegion: $region, showsUserLocation: true, userTrackingMode: $trackingMode,F annotationItems: viewModel.locations) { location in
                     MapAnnotation(coordinate: location.coordinate) {
                         Button(action: {
                             // Handle click on a marker
