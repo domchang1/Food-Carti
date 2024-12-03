@@ -40,21 +40,26 @@ struct MapView: View {
                             VStack {
                                 Text(location.name) // Display text for the marker
                                     .font(.caption)
-                                    .foregroundColor(.white)
+                                    .foregroundColor(location.visited ? .green : .white) // Green if visited
                                     .padding(4)
-                                    .background(Color.black.opacity(0.7))
+                                    .background(location.visited ? Color.green.opacity(0.3) : Color.black.opacity(0.7))
                                     .clipShape(RoundedRectangle(cornerRadius: 5))
                                 Image(systemName: "mappin.circle.fill") // Marker icon
-                                    .foregroundColor(.red)
+                                    .foregroundColor(location.visited ? .green : .red) // Green pin if visited
                                     .font(.title)
                             }
                         }
                     }
                 }
                 .onAppear {
+                    // Center the map on the user's location initially
                     if let userLocation = viewModel.userLocation {
                         region.center = userLocation
                     }
+                }
+                .onChange(of: viewModel.userLocation) { _ in
+                    // Trigger the proximity check already in the view model
+                    viewModel.checkProximity()
                 }
 
                 // Show Location Popup
@@ -72,6 +77,7 @@ struct MapView: View {
         .padding(.bottom, 50) // Space for the navigation bar
     }
 }
+
 
 
 
@@ -136,12 +142,12 @@ struct LocationPopupView: View {
                         .textFieldStyle(.roundedBorder)
                         .padding()
                         Button(action: {
-                            let review: Review = .init(
+                            viewModel.addReview(
                                 locationName: location.name,
                                 rating: rating,
                                 description: descriptionString,
-                                reviewer: "Bob")
-                            viewModel.reviews.insert(review, at: 0)
+                                reviewer: "Bob"
+                            )
                             addReview = false
                             addedReview = true
                         }) {

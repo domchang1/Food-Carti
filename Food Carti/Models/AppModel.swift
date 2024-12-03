@@ -14,15 +14,16 @@ struct Location: Identifiable, Equatable {
     let coordinate: CLLocationCoordinate2D
     let description: String
     let image: String
-    var reviews: [Review] = [] // Associated reviews
-    
-    static func ==(lhs: Location, rhs: Location) -> Bool {
-        return lhs.id == rhs.id
+    var visited: Bool = false // New property to track visited status
+}
+
+extension CLLocationCoordinate2D: Equatable {
+    public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D) -> Bool {
+        return lhs.latitude == rhs.latitude && lhs.longitude == rhs.longitude
     }
 }
 
-
-struct Review: Identifiable {
+struct Review: Identifiable, Codable {
     let id = UUID()
     let locationName: String
     let rating: Double

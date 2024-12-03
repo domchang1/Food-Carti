@@ -9,13 +9,8 @@ import Foundation
 import CoreLocation
 import SwiftData
 
-extension CLLocationCoordinate2D: Equatable {
-    public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D) -> Bool {
-        return lhs.latitude == rhs.latitude && lhs.longitude == rhs.longitude
-    }
-}
-
 class AppViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
+    
     var locations: [Location] = [
         Location(name: "Liam's Kitchen Daka", coordinate: CLLocationCoordinate2D(latitude: 39.952440, longitude: -75.199103), description: "An amazing and affordable Taiwanese food truck!", image: "liams"),
         Location(name: "Kim's Food Truck", coordinate: CLLocationCoordinate2D(latitude: 39.953916, longitude: -75.197531), description: "An amazing and convenient Chinese food truck!", image: "kims"),
@@ -26,36 +21,81 @@ class AppViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         Location(name: "Bui's Lunch Truck", coordinate: CLLocationCoordinate2D(latitude: 39.951656866004065, longitude: -75.19920484599017), description: "A convenient and delicious breakfast/lunch food truck!", image: "buis"),
         
     ]
-    let userDefaults = UserDefaults.standard
+    
+    @Published var favorited: [String] = []
+    
 
-    var favorited: [String] = []
+    let userDefaults = UserDefaults.standard
     var user = User(
         name: "John Doe",
         email: "john@example.com"
     )
     
-    @Published var reviews: [Review] = [
-        Review(locationName: "Tyson Bees", rating: 10.0, description: "Really yummy", reviewer: "Kevy Song"),
-        Review(locationName: "UPenn Gyro", rating: 5.0, description: "Disgusting", reviewer: "Big Rich"),
-        Review(locationName: "Liam's", rating: 10.0, description: "Amazing Taiwanese food", reviewer: "Kevy Song"),
-        Review(locationName: "UPenn Gyro", rating: 0.8, description: "Actual garbage", reviewer: "Kevy Song"),
-        Review(locationName: "Tyson Bees", rating: 6.7, description: "I mean it’s alright", reviewer: "Big Rich")
-    ]
-    
     
     @Published var userLocation: CLLocationCoordinate2D? // Store user location
+    
     private var locationManager: CLLocationManager
     
+    @Published private var visitedLocations: Set<String> {
+        didSet {
+            userDefaults.set(Array(visitedLocations), forKey: "visitedLocations") // Save to UserDefaults
+        }
+    }
+    
+    @Published var reviews: [Review] = [] {
+        didSet {
+            saveReviews()
+        }
+    }
+
     override init() {
         self.locationManager = CLLocationManager()
+        self.visitedLocations = Set(userDefaults.stringArray(forKey: "visitedLocations") ?? [])
         super.init()
-        
+
+        // Initialize location manager
         locationManager.delegate = self
-        locationManager.requestWhenInUseAuthorization() // Request location permission
-        locationManager.startUpdatingLocation() // Start location updates
-        
+        locationManager.requestWhenInUseAuthorization()
+        locationManager.startUpdatingLocation()
+
+        // Load persisted data
         favorited = userDefaults.stringArray(forKey: "favorited") ?? []
+        reviews = loadReviews()
+        updateVisitedState()
+
+        print("Loaded favorites: \(favorited)")
+        print("Loaded visited locations: \(visitedLocations)")
     }
+
+    // MARK: - Reviews Persistence
+    private func saveReviews() {
+        do {
+            let data = try JSONEncoder().encode(reviews)
+            userDefaults.set(data, forKey: "reviews")
+            print("Saved reviews: \(reviews.count) reviews")
+        } catch {
+            print("Failed to save reviews: \(error)")
+        }
+    }
+
+    private func loadReviews() -> [Review] {
+        guard let data = userDefaults.data(forKey: "reviews") else { return [] }
+        do {
+            let decodedReviews = try JSONDecoder().decode([Review].self, from: data)
+            print("Loaded reviews: \(decodedReviews.count) reviews")
+            return decodedReviews
+        } catch {
+            print("Failed to load reviews: \(error)")
+            return []
+        }
+    }
+
+    // MARK: - Add Review
+    func addReview(locationName: String, rating: Double, description: String, reviewer: String) {
+        let newReview = Review(locationName: locationName, rating: rating, description: description, reviewer: reviewer)
+        reviews.insert(newReview, at: 0)
+    }
+    
     
     // Delegate method to update user location
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
@@ -72,14 +112,52 @@ class AppViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func addFavorite(location: String) {
+        guard !favorited.contains(location) else { return } // Avoid duplicates
         favorited.append(location)
         userDefaults.set(favorited, forKey: "favorited")
+        print("Added to favorites: \(location)")
     }
-    
+
     func removeFavorite(location: String) {
         if let index = favorited.firstIndex(of: location) {
             favorited.remove(at: index)
             userDefaults.set(favorited, forKey: "favorited")
+            print("Removed from favorites: \(location)")
+        }
+    }
+    
+    func markVisited(locationName: String) {
+        visitedLocations.insert(locationName) // Add to the visited set
+        updateVisitedState() // Update the visited property for locations
+    }
+
+    func isVisited(locationName: String) -> Bool {
+        return visitedLocations.contains(locationName)
+    }
+
+    // Update the visited property for all locations
+    private func updateVisitedState() {
+        for i in 0..<locations.count {
+            locations[i].visited = isVisited(locationName: locations[i].name)
+        }
+    }
+    
+    private let visitThreshold: CLLocationDistance = 50
+    
+    func checkProximity() {
+        guard let userLocation = userLocation else { return }
+
+        for location in locations {
+            let locationCoordinate = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+            let userCoordinate = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
+
+            let distance = locationCoordinate.distance(from: userCoordinate)
+
+            if distance <= visitThreshold && !isVisited(locationName: location.name) {
+                markVisited(locationName: location.name)
+                print("Marked as visited: \(location.name)")
+            }
         }
     }
 }
+
