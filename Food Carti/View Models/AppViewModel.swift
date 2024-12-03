@@ -26,10 +26,7 @@ class AppViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     
 
     let userDefaults = UserDefaults.standard
-    var user = User(
-        name: "John Doe",
-        email: "john@example.com"
-    )
+    var username = ""
     
     
     @Published var userLocation: CLLocationCoordinate2D? // Store user location
@@ -53,11 +50,17 @@ class AppViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
 
         // Load persisted data
         favorited = userDefaults.stringArray(forKey: "favorited") ?? []
+        username = userDefaults.string(forKey: "username") ?? ""
         reviews = loadReviews()
 
         print("Loaded favorites: \(favorited)")
     }
 
+    func addUsername(name: String) {
+        username = name
+        userDefaults.set(username, forKey: "username")
+    }
+    
     // MARK: - Reviews Persistence
     private func saveReviews() {
         do {

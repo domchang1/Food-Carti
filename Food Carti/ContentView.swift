@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var viewModel: AppViewModel
+    @State var username: String = ""
     var body: some View {
         HStack(alignment: .center) {
             Image("foodcart")
@@ -23,16 +24,40 @@ struct ContentView: View {
         .foregroundStyle(.primary)
         .background(Color.gray.opacity(0.1))
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        TabView {
-            Tab("Home", systemImage: "house") {
-                HomeView().environmentObject(viewModel)
+        if viewModel.username != "" {
+            TabView {
+                Tab("Home", systemImage: "house") {
+                    HomeView().environmentObject(viewModel)
+                }
+                Tab("Map", systemImage: "map") {
+                    MapView().environmentObject(viewModel)
+                }
+                Tab("User", systemImage: "person") {
+                    UserView().environmentObject(viewModel)
+                }
             }
-            Tab("Map", systemImage: "map") {
-                MapView().environmentObject(viewModel)
-            }
-            Tab("User", systemImage: "person") {
-                UserView().environmentObject(viewModel)
-            }
+        } else {
+            Text("Please enter a username")
+                        .padding()
+                        .fontWeight(.medium)
+                        .font(.system(size: 30))
+                        .frame(maxWidth: .infinity, alignment: .init(horizontal: .center, vertical: .center))
+                    TextField(
+                            "Enter Name",
+                            text: $username
+                        )
+                        .textFieldStyle(.roundedBorder)
+                        .padding()
+            Button(action: {
+                viewModel.addUsername(name: username)
+            }){
+                            Text("Submit")
+                                .padding()
+                                    .fontWeight(.medium)
+                                    .background(Color.blue)
+                                    .foregroundColor(.white)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
         }
     }
 }

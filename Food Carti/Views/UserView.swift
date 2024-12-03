@@ -24,11 +24,9 @@ struct UserView: View {
                         .frame(width: 100, height: 100)
                         .foregroundColor(.gray)
                         .padding()
-                    Text(viewModel.user.name)
+                    Text(viewModel.username)
                         .font(.system(size: 30))
                         .bold()
-                    Text(viewModel.user.email)
-                        .foregroundColor(.secondary)
                 }
                 Spacer()
             }
@@ -41,6 +39,7 @@ struct UserView: View {
                 Text("Favorite Food Carts")
                     .font(.headline)
                     .padding(.leading)
+                    .padding()
 
                 if viewModel.favorited.isEmpty {
                     Text("No favorites yet!")
@@ -48,7 +47,7 @@ struct UserView: View {
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding()
                         .background(Color.white.cornerRadius(10))
-                        .shadow(radius: 10)
+                        
                 } else {
                     List {
                         ForEach(viewModel.favorited, id: \.self) { favoriteName in
